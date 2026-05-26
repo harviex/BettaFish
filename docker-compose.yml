@@ -1,39 +1,53 @@
-version: "3.9"
-
 services:
   bettafish:
     image: ghcr.io/666ghj/bettafish:latest
-    # Speed up mirror
-    # image: ghcr.nju.edu.cn/666ghj/bettafish:latest
     container_name: bettafish
     restart: unless-stopped
-    environment:
-      - PYTHONUNBUFFERED=1
-      - STREAMLIT_SERVER_ENABLE_FILE_WATCHER=false
     ports:
       - "5000:5000"
-      - "8501:8501"
-      - "8502:8502"
-      - "8503:8503"
+      - "8501-8503:8501-8503"
     volumes:
+      - ./data:/app/data
       - ./logs:/app/logs
-      - ./final_reports:/app/final_reports
-      - ./.env:/app/.env  
-      - ./insight_engine_streamlit_reports:/app/insight_engine_streamlit_reports
-      - ./media_engine_streamlit_reports:/app/media_engine_streamlit_reports
-      - ./query_engine_streamlit_reports:/app/query_engine_streamlit_reports
-
-  db:
-    image: postgres:15
-    container_name: bettafish-db
-    restart: unless-stopped
-    env_file:
-      - .env
+      - ./.env:/app/.env
+      - ./app.py:/app/app.py
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-bettafish}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bettafish}
-      POSTGRES_DB: ${POSTGRES_DB:-bettafish}
-    ports:
-      - "${POSTGRES_PORT:-5444}:5432"
-    volumes:
-      - ./db_data:/var/lib/postgresql/data
+      # ── 数据库（从 .env 读取）──
+      DB_HOST: "${DB_HOST}"
+      DB_PORT: "${DB_PORT}"
+      DB_USER: "${DB_USER}"
+      DB_PASSWORD: "${DB_PASSWORD}"
+      DB_NAME: "${DB_NAME}"
+      DB_CHARSET: "${DB_CHARSET:-utf8mb4}"
+      DB_DIALECT: "${DB_DIALECT:-postgresql}"
+      # ── OpenRouter API Key（从 .env 读取）──
+      OPENROUTER_API_KEY: "${OPENROUTER_API_KEY}"
+      INSIGHT_ENGINE_API_KEY: "${OPENROUTER_API_KEY}"
+      MEDIA_ENGINE_API_KEY: "${OPENROUTER_API_KEY}"
+      QUERY_ENGINE_API_KEY: "${OPENROUTER_API_KEY}"
+      REPORT_ENGINE_API_KEY: "${OPENROUTER_API_KEY}"
+      MINDSPIDER_API_KEY: "${OPENROUTER_API_KEY}"
+      FORUM_HOST_API_KEY: "${OPENROUTER_API_KEY}"
+      KEYWORD_OPTIMIZER_API_KEY: "${OPENROUTER_API_KEY}"
+      # ── LLM 模型配置（全部使用 :free 版本）──
+      INSIGHT_ENGINE_BASE_URL: "https://openrouter.ai/api/v1"
+      INSIGHT_ENGINE_MODEL_NAME: "openai/gpt-oss-120b:free"
+      MEDIA_ENGINE_BASE_URL: "https://openrouter.ai/api/v1"
+      MEDIA_ENGINE_MODEL_NAME: "openai/gpt-oss-120b:free"
+      QUERY_ENGINE_BASE_URL: "https://openrouter.ai/api/v1"
+      QUERY_ENGINE_MODEL_NAME: "openai/gpt-oss-120b:free"
+      REPORT_ENGINE_BASE_URL: "https://openrouter.ai/api/v1"
+      REPORT_ENGINE_MODEL_NAME: "openai/gpt-oss-120b:free"
+      MINDSPIDER_BASE_URL: "https://openrouter.ai/api/v1"
+      MINDSPIDER_MODEL_NAME: "openai/gpt-oss-120b:free"
+      FORUM_HOST_BASE_URL: "https://openrouter.ai/api/v1"
+      FORUM_HOST_MODEL_NAME: "nvidia/nemotron-3-super-120b-a12b:free"
+      KEYWORD_OPTIMIZER_BASE_URL: "https://openrouter.ai/api/v1"
+      KEYWORD_OPTIMIZER_MODEL_NAME: "nvidia/nemotron-3-super-120b-a12b:free"
+      # ── 搜索工具（从 .env 读取）──
+      TAVILY_API_KEY: "${TAVILY_API_KEY}"
+      SEARCH_TOOL_TYPE: "${SEARCH_TOOL_TYPE:-AnspireAPI}"
+      ANSPIRE_BASE_URL: "${ANSPIRE_BASE_URL:-https://plugin.anspire.cn/api/ntsearch/search}"
+      ANSPIRE_API_KEY: "${ANSPIRE_API_KEY}"
+      BOCHA_BASE_URL: "${BOCHA_BASE_URL:-https://api.bocha.cn/v1/ai-search}"
+      BOCHA_WEB_SEARCH_API_KEY: "${BOCHA_WEB_SEARCH_API_KEY}"
